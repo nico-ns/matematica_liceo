@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Laboratorio Algebrico: Dimostrazioni delle Proprietà delle Potenze</title>
+  
+  <!-- Tailwind CSS per layout responsive e design accademico moderno -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- KaTeX CSS e JS per rendering matematico veloce e affidabile -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+    
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    
+    .math-font {
+      font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    }
+
+    /* Animazione apertura suggerimenti <details> */
+    details summary {
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.2s ease;
+    }
+    details[open] summary {
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+
+    /* Ottimizzazione CSS per la stampa e generazione PDF */
+    @media print {
+      body {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        padding: 0 !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .page-break {
+        page-break-before: always;
+      }
+      .card-proof {
+        break-inside: avoid;
+        border: 1px solid #cbd5e1 !important;
+        box-shadow: none !important;
+        margin-bottom: 1.5rem !important;
+      }
+      textarea {
+        border: 1px solid #94a3b8 !important;
+        background: transparent !important;
+        resize: none !important;
+        overflow: visible !important;
+        height: auto !important;
+        min-height: 120px !important;
+      }
+      details {
+        display: none !important; /* Non stampare i suggerimenti a meno che non siano stati aperti */
+      }
+      details[open] {
+        display: block !important;
+        border: 1px solid #e2e8f0 !important;
+      }
+      .print-student-info {
+        display: block !important;
+      }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen py-8 px-4 sm:px-6 lg:px-8">
+
+  <!-- Barra comandi fissa in alto per desktop e mobile -->
+  <header class="no-print sticky top-4 z-40 max-w-5xl mx-auto mb-6 bg-white/95 backdrop-blur-md shadow-sm border border-slate-200 rounded-2xl px-4 py-3 sm:px-6 flex flex-wrap items-center justify-between gap-3">
+    <div class="flex items-center space-x-3">
+      <div class="h-9 w-9 rounded-xl bg-blue-700 text-white flex items-center justify-center font-bold text-lg shadow-sm">
+        π
+      </div>
+      <div>
+        <h1 class="text-sm sm:text-base font-bold text-slate-900 tracking-tight leading-tight">Laboratorio di Matematica</h1>
+        <p class="text-xs text-slate-500 font-medium">Liceo Scientifico — $1^{\text{a}}$ Classe</p>
+      </div>
+    </div>
+    
+    <div class="flex items-center flex-wrap gap-2 text-xs sm:text-sm">
+      <span id="saveStatus" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+        <svg class="w-3 h-3 mr-1 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+        Salvataggio automatico attivo
+      </span>
+
+      <button onclick="window.print()" class="inline-flex items-center px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-sm transition active:scale-95">
+        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+        Stampa / PDF
+      </button>
+
+      <button onclick="scaricaFileTesto()" class="inline-flex items-center px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium border border-slate-200 transition active:scale-95">
+        <svg class="w-4 h-4 mr-1.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+        Esporta (.md)
+      </button>
+
+      <button onclick="chiediReset()" class="inline-flex items-center px-2.5 py-2 rounded-xl text-rose-600 hover:bg-rose-50 font-medium transition" title="Cancella tutto">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto space-y-6">
+    
+    <!-- Intestazione Studente con Auto-salvataggio -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+      <div class="border-b border-slate-200 pb-4 mb-5 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+        <div>
+          <span class="text-xs font-semibold uppercase tracking-wider text-blue-600 bg-blue-50 px-2.5 py-1 rounded-md">Attività Didattica Formativa</span>
+          <h2 class="text-2xl font-bold text-slate-900 mt-2">Dimostrazioni Guidate: Proprietà delle Potenze</h2>
+          <p class="text-sm text-slate-600 mt-1">Conduci le dimostrazioni passo dopo passo giustificando ogni passaggio algebrico con assiomi e definizioni.</p>
+        </div>
+        <div id="statsBadge" class="no-print self-start md:self-auto bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-xs text-slate-600 font-medium">
+          Suggerimenti sbloccati: <span id="hintsCount" class="font-bold text-blue-600">0</span> su 12
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" for="inputNome">Nome</label>
+          <input type="text" id="inputNome" placeholder="es. Mario" class="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" for="inputCognome">Cognome</label>
+          <input type="text" id="inputCognome" placeholder="es. Rossi" class="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" for="inputClasse">Classe e Sezione</label>
+          <input type="text" id="inputClasse" placeholder="es. 1°A Scientifico" class="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" for="inputData">Data di svolgimento</label>
+          <input type="date" id="inputData" class="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition">
+        </div>
+      </div>
+    </div>
+
+    <!-- Quadro Teorico Condiviso -->
+    <div class="bg-gradient-to-br from-slate-900 to-blue-950 text-white rounded-2xl shadow-sm p-6">
+      <div class="flex items-center space-x-2 text-blue-300 mb-3">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+        <h3 class="text-sm font-bold uppercase tracking-wider">Quadro di Riferimento Teorico</h3>
+      </div>
+      
+      <p class="text-slate-300 text-sm leading-relaxed mb-4">
+        <strong>Definizione fondamentale:</strong> Sia $a \in \mathbb{R}$ e $n \in \mathbb{N}$ con $n \ge 1$. La potenza $n$-esima di base $a$ è il prodotto di $n$ fattori tutti uguali ad $a$:
+      </p>
+      <div class="bg-white/10 rounded-xl p-3 text-center my-3 border border-white/10 overflow-x-auto text-lg">
+        $$a^n = \underbrace{a \cdot a \cdot a \cdot \dots \cdot a}_{n \text{ fattori}}$$
+      </div>
+      
+      <div class="mt-4 pt-3 border-t border-white/10 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-slate-300">
+        <div class="bg-white/5 rounded-lg p-2.5">
+          <strong class="text-white block mb-1">1. Prodotto stessa base:</strong>
+          $$a^n \cdot a^m = a^{n+m}$$
+        </div>
+        <div class="bg-white/5 rounded-lg p-2.5">
+          <strong class="text-white block mb-1">2. Quoziente stessa base:</strong>
+          $$\frac{a^n}{a^m} = a^{n-m} \quad (a \neq 0, n \ge m)$$
+        </div>
+        <div class="bg-white/5 rounded-lg p-2.5">
+          <strong class="text-white block mb-1">3. Esponente nullo:</strong>
+          $$a^0 = 1 \quad (a \neq 0)$$
+        </div>
+      </div>
+    </div>
+
+    <!-- DIMOSTRAZIONE 1: Potenza di un prodotto -->
+    <section class="card-proof bg-white rounded-2xl shadow-sm border border-slate-200 p-6 transition-all hover:border-slate-300">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-2 mb-4">
+        <div>
+          <span class="inline-block text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2.5 py-0.5 rounded-full mb-1">Dimostrazione 1</span>
+          <h3 class="text-lg font-bold text-slate-900">Potenza di un Prodotto</h3>
+        </div>
+        <div class="text-right sm:text-lg font-semibold text-indigo-900">
+          $$(a \cdot b)^n = a^n \cdot b^n$$
+        </div>
+      </div>
+
+      <div class="text-xs sm:text-sm text-slate-600 mb-4 bg-slate-50 p-3 rounded-xl border border-slate-100">
+        <p><strong>Ipotesi:</strong> $a, b \in \mathbb{R}$, $n \in \mathbb{N}$ con $n \ge 1$. &nbsp;|&nbsp; <strong>Tesi:</strong> $(ab)^n = a^n b^n$.</p>
+      </div>
+
+      <!-- Spazio di lavoro studente -->
+      <div class="mb-4">
+        <label for="proof1" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+          <span>La tua dimostrazione formale:</span>
+          <span class="text-slate-400 font-normal normal-case text-xs">Argomenta le proprietà algebriche impiegate</span>
+        </label>
+        <textarea id="proof1" rows="5" placeholder="Scrivi qui i tuoi passaggi... (es. 'Per definizione di potenza, $(ab)^n = (ab)(ab)...(ab)$ $n$ volte. Quindi applicando le proprietà...')" class="proof-input w-full p-3.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm leading-relaxed font-normal transition bg-slate-50/50 hover:bg-white focus:bg-white"></textarea>
+      </div>
+
+      <!-- Scaffolding a scomparsa a 3 livelli -->
+      <div class="space-y-2 no-print">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Hai bisogno di aiuto? Sblocca i suggerimenti:</p>
+
+        <!-- Livello 1 -->
+        <details class="group border border-amber-200/80 rounded-xl bg-amber-50/40 overflow-hidden" ontoggle="aggiornaConteggioSuggerimenti()">
+          <summary class="px-4 py-2.5 text-xs sm:text-sm font-semibold text-amber-900 flex items-center justify-between hover:bg-amber-100/50">
+            <span class="flex items-center">
+              <span class="w-5 h-5 rounded-md bg-amber-200 text-amber-900 flex items-center justify-center text-xs font-bold mr-2">1</span>
+              Livello 1: Idea intuitiva e punto di partenza
+            </span>
+            <span class="text-amber-600 group-open:rotate-180 transition-transform">▼</span>
+          </summary>
+          <div class="p-3.5 bg-white text-xs sm:text-sm text-slate-700 border-t border-amber-100">
+            Considera la base come l'intero blocco $(a \cdot b)$. Applica la definizione iniziale di potenza: quante volte devi moltiplicare questo blocco per se stesso?
+          </div>
+        </details>
+
+        <!-- Livello 2 -->
+        <details class="group border border-blue-200/80 rounded-xl bg-blue-50/40 overflow-hidden" ontoggle="aggiornaConteggioSuggerimenti()">
+          <summary class="px-4 py-2.5 text-xs sm:text-sm font-semibold text-blue-900 flex items-center justify-between hover:bg-blue-100/50">
+            <span class="flex items-center">
+              <span class="w-5 h-5 rounded-md bg-blue-200 text-blue-900 flex items-center justify-center text-xs font-bold mr-2">2</span>
+              Livello 2: Proprietà delle operazioni nei reali
+            </span>
+            <span class="text-amber-600 group-open:rotate-180 transition-transform">▼</span>
+          </summary>
+          <div class="p-3.5 bg-white text-xs sm:text-sm text-slate-700 border-t border-blue-100">
+            Nell'espressione $\underbrace{(a \cdot b) \cdot (a \cdot b) \cdot \dots \cdot (a \cdot b)}_{n \text{ volte}}$, tutte le operazioni sono moltiplicazioni. Puoi eliminare le parentesi e commutare i fattori: quali proprietà algebriche (associativa, commutativa) giustificano il raccogliere tutti i fattori $a$ a sinistra e tutti i fattori $b$ a destra?
+          </div>
+        </details>
+
+        <!-- Livello 3 -->
+        <details class="group border border-emerald-200/80 rounded-xl bg-emerald-50/40 overflow-hidden" ontoggle="aggiornaConteggioSuggerimenti()">
+          <summary class="px-4 py-2.5 text-xs sm:text-sm font-semibold text-emerald-900 flex items-center justify-between hover:bg-emerald-100/50">
+            <span class="flex items-center">
+              <span class="w-5 h-5 rounded-md bg-emerald-200 text-emerald-900 flex items-center justify-center text-xs font-bold mr-2">3</span>
+              Livello 3: Verifica e passaggio conclusivo
+            </span>
+            <span class="text-amber-600 group-open:rotate-180 transition-transform">▼</span>
+          </summary>
+          <div class="p-3.5 bg-white text-xs sm:text-sm text-slate-700 border-t border-emerald-100">
+            Riorganizzando ottieni:
+            $$(a \cdot b)^n = \underbrace{(a \cdot a \cdot \dots \cdot a)}_{n \text{ volte}} \cdot \underbrace{(b \cdot b \cdot \dots \cdot b)}_{n \text{ volte}}$$
+            Ciascuno dei due blocchi è, per definizione, rispettivamente $a^n$ e $b^n$. Pertanto $(ab)^n = a^n \cdot b^n$.
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <!-- DIMOSTRAZIONE 2: Potenza di potenza -->
+    <section class="card-proof bg-white rounded-2xl shadow-sm border border-slate-200 p-6 transition-all hover:border-slate-300">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-2 mb-4">
+        <div>
+          <span class="inline-block text-xs font-bold text-violet-700 bg-violet-50 border border-violet-200 px-2.5 py-0.5 rounded-full mb-1">Dimostrazione 2</span>
+          <h3 class="text-lg font-bold text-slate-900">Potenza di Potenza</h3>
+        </div>
+        <div class="text-right sm:text-lg font-semibold text-violet-900">
+          $$(a^n)^m = a^{n \cdot m}$$
+        </div>
+      </div>
+
+      <div class="text-xs sm:text-sm text-slate-600 mb-4 bg-slate-50 p-3 rounded-xl border border-slate-100">
+        <p><strong>Ipotesi:</strong> $a \in \mathbb{R}$, $n, m \in \mathbb{N}$ con $n, m \ge 1$. &nbsp;|&nbsp; <strong>Tesi:</strong> $(a^n)^m = a^{n \cdot m}$.</p>
+      </div>
+
+      <!-- Spazio di lavoro studente -->
+      <div class="mb-4">
+        <label for="proof2" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+          <span>La tua dimostrazione formale:</span>
+          <span class="text-slate-400 font-normal normal-case text-xs">Collega la somma ripetuta al prodotto</span>
+        </label>
+        <textarea id="proof2" rows="5" placeholder="Scrivi qui i tuoi passaggi... (es. 'Considero la base $a^n$ elevata a $m$. Per definizione di potenza...')" class="proof-input w-full p-3.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-sm leading-relaxed font-normal transition bg-slate-50/50 hover:bg-white focus:bg-white"></textarea>
+      </div>
+
+      <!-- Scaffolding a 3 livelli -->
+      <div class="space-y-2 no-print">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Hai bisogno di aiuto? Sblocca i suggerimenti:</p>
+
+        <details class="group border border-amber-200/80 rounded-xl bg-amber-50/40 overflow-hidden" ontoggle="aggiornaConteggioSuggerimenti()">
+          <summary class="px-4 py-2.5 text-xs sm:text-sm font-semibold text-amber-900 flex items-center justify-between hover:bg-amber-100/50">
+            <span class="flex items-center">
+              <span class="w-5 h-5 rounded-md bg-amber-200 text-amber-900 flex items-center justify-center text-xs font-bold mr-2">1</span>
+              Livello 1: Identificare base ed esponente della potenza esterna
+            </span>
+            <span class="text-amber-600 group-open:rotate-180 transition-transform">▼</span>
+          </summary>
+          <div class="p-3.5 bg-white text-xs sm:text-sm text-slate-700 border-t border-amber-100">
+            Nella scrittura $(a^n)^m$, la base della potenza esterna è $a^n$ e l'esponente è $m$. Esprimi questa potenza come moltiplicazione ripetuta di fattori $a^n$.
+          </div>
+        </details>
+
+        <details class="group border border-blue-200/80 rounded-xl bg-blue-50/40 overflow-hidden" ontoggle="aggiornaConteggioSuggerimenti()">
+          <summary class="px-4 py-2.5 text-xs sm:text-sm font-semibold text-blue-900 flex items-center justify-between hover:bg-blue-100/50">
+            <span class="flex items-center">
+              <span class="w-5 h-5 rounded-md bg-blue-200 text-blue-900 flex items-center justify-center text-xs font-bold mr-2">2</span>
+              Livello 2: Applicazione della proprietà del prodotto
+            </span>
+            <span class="text-amber-600 group-open:rotate-180 transition-transform">▼</span>
+          </summary>
+          <div class="p-3.5 bg-white text-xs sm:text-sm text-slate-700 border-t border-blue-100">
+            Abbiamo: $(a^n)^m = \underbrace{a^n \cdot a^n \cdot \dots \cdot a^n}_{m \text{ fattori}}$.<br>
+            Applica la regola nota del prodotto di potenze con uguale base ($a^x \cdot a^y = a^{x+y}$): come si combinano gli esponenti? Quanti addendi $n$ compaiono all'esponente?
+          </div>
+        </details>
+
+        <details class="group border border-emerald-200/80 rounded-xl bg-emerald-50/40 overflow-hidden" ontoggle="aggiornaConteggioSuggerimenti()">
+          <summary class="px-4 py-2.5 text-xs sm:text-sm font-semibold text-emerald-900 flex items-center justify-between hover:bg-emerald-100/50">
+            <span class="flex items-center">
+              <span class="w-5 h-5 rounded-md bg-emerald-200 text-emerald-900 flex items-center justify-center text-xs font-bold mr-2">3</span>
+              Livello 3: Verifica e passaggio conclusivo
+            </span>
+            <span class="text-amber-600 group-open:rotate-180 transition-transform">▼</span>
+          </summary>
+          <div class="p-3.5 bg-white text-xs sm:text-sm text-slate-700 border-t border-emerald-100">
+            Sommando gli esponenti otteniamo:
+            $$(a^n)^m = a^{\overbrace{n + n + \dots + n}^{m \text{ volte}}}$$
+            Per la definizione stessa di moltiplicazione in $\mathbb{N}$, la somma di $m$ addendi tutti uguali a $n$ è data da $n \cdot m$. Dunque $(a^n)^m = a^{n \cdot m}$.
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <!-- DIMOSTRAZIONE 3: Potenza di un quoziente -->
+    <section class="card-proof bg-white rounded-2xl shadow-sm border border-slate-200 p-6 transition-all hover:border-slate-300">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-2 mb-4">
+        <div>
+          <span class="inline-block text-xs font-bold text-teal-700 bg-teal-50 border border-teal-200 px-2.5 py-0.5 rounded-full mb-1">Dimostrazione 3</span>
+          <h3 class="text-lg font-bold text-slate-900">Potenza di un Quoziente (Frazione)</h3>
+        </div>
+        <div class="text-right sm:text-lg font-semibold text-teal-900">
+          $$\left(\frac{a}{b}\right)^n = \frac{a^n}{b^n}$$
+        </div>
+      </div>
+
+      <div class="text-xs sm:text-sm text-slate-600 mb-4 bg-slate-50 p-3 rounded-xl border border-slate-100">
+        <p><strong>Ipotesi:</strong> $a, b \in \mathbb{R}$ con $b \neq 0$, $n \in \mathbb{N}$ con $n \ge 1$. &nbsp;|&nbsp; <strong>Tesi:</strong> $\left(\frac{a}{b}\right)^n = \frac{a^n}{b^n}$.</p>
+      </div>
+
+      <!-- Spazio di lavoro studente -->
+      <div class="mb-4">
+        <label for="proof3" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+          <span>La tua dimostrazione formale:</span>
+          <span class="text-slate-400 font-normal normal-case text-xs">Giustifica il calcolo tra numeratori e denominatori</span>
+        </label>
+        <textarea id="proof3" rows="5" placeholder="Scrivi qui i tuoi passaggi... (es. 'Scrivo la frazione a/b moltiplicata per se stessa n volte. Per la regola del prodotto di frazioni...')" class="proof-input w-full p-3.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-sm leading-relaxed font-normal transition bg-slate-50/50 hover:bg-white focus:bg-white"></textarea>
+      </div>
+
+      <!-- Scaffolding a 3 livelli -->
+      <div class="space-y-2 no-print">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Hai bisogno di aiuto? Sblocca i suggerimenti:</p>
+
+        <details class="group border border-amber-200/80 rounded-xl bg-amber-50/40 overflow-hidden" ontoggle="aggiornaConteggioSuggerimenti()">
+          <summary class="px-4 py-2.5 text-xs sm:text-sm font-semibold text-amber-900 flex items-center justify-between hover:bg-amber-100/50">
+            <span class="flex items-center">
+              <span class="w-5 h-5 rounded-md bg-amber-200 text-amber-900 flex items-center justify-center text-xs font-bold mr-2">1</span>
+              Livello 1: Espansione per definizione
+            </span>
+            <span class="text-amber-600 group-open:rotate-180 transition-transform">▼</span>
+          </summary>
+          <div class="p-3.5 bg-white text-xs sm:text-sm text-slate-700 border-t border-amber-100">
+            Riconosci che l'argomento elevato a potenza è l'intera frazione $\frac{a}{b}$. Scrivi la moltiplicazione ripetuta di tale frazione per $n$ volte.
+          </div>
+        </details>
+
+        <details class="group border border-blue-200/80 rounded-xl bg-blue-50/40 overflow-hidden" ontoggle="aggiornaConteggioSuggerimenti()">
+          <summary class="px-4 py-2.5 text-xs sm:text-sm font-semibold text-blue-900 flex items-center justify-between hover:bg-blue-100/50">
+            <span class="flex items-center">
+              <span class="w-5 h-5 rounded-md bg-blue-200 text-blue-900 flex items-center justify-center text-xs font-bold mr-2">2</span>
+              Livello 2: Regola del prodotto tra numeri razionali/frazioni
+            </span>
+            <span class="text-amber-600 group-open:rotate-180 transition-transform">▼</span>
+          </summary>
+          <div class="p-3.5 bg-white text-xs sm:text-sm text-slate-700 border-t border-blue-100">
+            Come si calcola il prodotto tra più frazioni? Ricorda che il prodotto è una frazione avente come numeratore il prodotto di tutti i singoli numeratori e come denominatore il prodotto di tutti i singoli denominatori:
+            $$\frac{a}{b} \cdot \frac{a}{b} \cdot \dots \cdot \frac{a}{b} = \frac{a \cdot a \cdot \dots \cdot a}{b \cdot b \cdot \dots \cdot b}$$
+          </div>
+        </details>
+
+        <details class="group border border-emerald-200/80 rounded-xl bg-emerald-50/40 overflow-hidden" ontoggle="aggiornaConteggioSuggerimenti()">
+          <summary class="px-4 py-2.5 text-xs sm:text-sm font-semibold text-emerald-900 flex items-center justify-between hover:bg-emerald-100/50">
+            <span class="flex items-center">
+              <span class="w-5 h-5 rounded-md bg-emerald-200 text-emerald-900 flex items-center justify-center text-xs font-bold mr-2">3</span>
+              Livello 3: Verifica e passaggio conclusivo
+            </span>
+            <span class="text-amber-600 group-open:rotate-180 transition-transform">▼</span>
+          </summary>
+          <div class="p-3.5 bg-white text-xs sm:text-sm text-slate-700 border-t border-emerald-100">
+            Al numeratore abbiamo un prodotto di $n$ fattori pari ad $a$, che per definizione è $a^n$. Al denominatore abbiamo un prodotto di $n$ fattori pari a $b$, ossia $b^n$. Pertanto $\left(\frac{a}{b}\right)^n = \frac{a^n}{b^n}$.
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <!-- DIMOSTRAZIONE 4: Esponente negativo -->
+    <section class="card-proof bg-white rounded-2xl shadow-sm border border-slate-200 p-6 transition-all hover:border-slate-300">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-2 mb-4">
+        <div>
+          <span class="inline-block text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 px-2.5 py-0.5 rounded-full mb-1">Dimostrazione 4</span>
+          <h3 class="text-lg font-bold text-slate-900">Potenza con Esponente Intero Negativo</h3>
+        </div>
+        <div class="text-right sm:text-lg font-semibold text-rose-900">
+          $$a^{-n} = \frac{1}{a^n}$$
+        </div>
+      </div>
+
+      <div class="text-xs sm:text-sm text-slate-600 mb-4 bg-slate-50 p-3 rounded-xl border border-slate-100">
+        <p><strong>Ipotesi:</strong> $a \in \mathbb{R} \setminus \{0\}$, $n \in \mathbb{N}$ con $n \ge 1$. &nbsp;|&nbsp; <strong>Tesi:</strong> $a^{-n} = \frac{1}{a^n}$.</p>
+      </div>
+
+      <!-- Spazio di lavoro studente -->
+      <div class="mb-4">
+        <label for="proof4" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+          <span>La tua dimostrazione formale:</span>
+          <span class="text-slate-400 font-normal normal-case text-xs">Usa il principio di permanenza delle proprietà o l'inverso moltiplicativo</span>
+        </label>
+        <textarea id="proof4" rows="5" placeholder="Scrivi qui i tuoi passaggi... (es. 'Scrivo l'esponente -n come differenza (0 - n). Applicando la proprietà del quoziente...')" class="proof-input w-full p-3.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 text-sm leading-relaxed font-normal transition bg-slate-50/50 hover:bg-white focus:bg-white"></textarea>
+      </div>
+
+      <!-- Scaffolding a 3 livelli -->
+      <div class="space-y-2 no-print">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Hai bisogno di aiuto? Sblocca i suggerimenti:</p>
+
+        <details class="group border border-amber-200/80 rounded-xl bg-amber-50/40 overflow-hidden" ontoggle="aggiornaConteggioSuggerimenti()">
+          <summary class="px-4 py-2.5 text-xs sm:text-sm font-semibold text-amber-900 flex items-center justify-between hover:bg-amber-100/50">
+            <span class="flex items-center">
+              <span class="w-5 h-5 rounded-md bg-amber-200 text-amber-900 flex items-center justify-center text-xs font-bold mr-2">1</span>
+              Livello 1: Riscrivere l'esponente negativo come differenza
+            </span>
+            <span class="text-amber-600 group-open:rotate-180 transition-transform">▼</span>
+          </summary>
+          <div class="p-3.5 bg-white text-xs sm:text-sm text-slate-700 border-t border-amber-100">
+            In algebra, estendiamo le proprietà affinché restino valide (*principio di permanenza delle forme*). L'intero negativo $-n$ può essere scritto come sottrazione tra zero e un numero naturale: $-n = 0 - n$.
+          </div>
+        </details>
+
+        <details class="group border border-blue-200/80 rounded-xl bg-blue-50/40 overflow-hidden" ontoggle="aggiornaConteggioSuggerimenti()">
+          <summary class="px-4 py-2.5 text-xs sm:text-sm font-semibold text-blue-900 flex items-center justify-between hover:bg-blue-100/50">
+            <span class="flex items-center">
+              <span class="w-5 h-5 rounded-md bg-blue-200 text-blue-900 flex items-center justify-center text-xs font-bold mr-2">2</span>
+              Livello 2: Applicare la regola del quoziente al contrario
+            </span>
+            <span class="text-amber-600 group-open:rotate-180 transition-transform">▼</span>
+          </summary>
+          <div class="p-3.5 bg-white text-xs sm:text-sm text-slate-700 border-t border-blue-100">
+            Se richiediamo che la proprietà del quoziente $\frac{a^x}{a^y} = a^{x-y}$ sia valida per tutti gli interi, allora:
+            $$a^{-n} = a^{0 - n} = \frac{a^0}{a^n}$$
+            Cosa sappiamo già sul valore di $a^0$ quando $a \neq 0$?
+          </div>
+        </details>
+
+        <details class="group border border-emerald-200/80 rounded-xl bg-emerald-50/40 overflow-hidden" ontoggle="aggiornaConteggioSuggerimenti()">
+          <summary class="px-4 py-2.5 text-xs sm:text-sm font-semibold text-emerald-900 flex items-center justify-between hover:bg-emerald-100/50">
+            <span class="flex items-center">
+              <span class="w-5 h-5 rounded-md bg-emerald-200 text-emerald-900 flex items-center justify-center text-xs font-bold mr-2">3</span>
+              Livello 3: Verifica tramite l'elemento inverso
+            </span>
+            <span class="text-amber-600 group-open:rotate-180 transition-transform">▼</span>
+          </summary>
+          <div class="p-3.5 bg-white text-xs sm:text-sm text-slate-700 border-t border-emerald-100">
+            Poiché $a^0 = 1$, sostituendo si ottiene direttamente $a^{-n} = \frac{1}{a^n}$.<br>
+            <em>Verifica alternativa:</em> Se moltiplichi $a^{-n} \cdot a^n$, per la regola del prodotto ottieni $a^{-n + n} = a^0 = 1$. Poiché il loro prodotto è l'elemento neutro $1$, $a^{-n}$ è per definizione l'inverso moltiplicativo (reciproco) di $a^n$, ovvero $\frac{1}{a^n}$.
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <!-- Riflessione critica finale -->
+    <div class="card-proof bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+      <h3 class="text-base font-bold text-slate-900 mb-2">Domanda di Riflessione Critica</h3>
+      <p class="text-sm text-slate-600 mb-3">Perché sia nella definizione di $a^0$ sia in quella di $a^{-n}$ è strettamente necessario escludere il caso $a = 0$ ($a \neq 0$)?</p>
+      <textarea id="reflection" rows="3" placeholder="Argomenta brevemente la motivazione algebrica (es. divisione per zero, forme indeterminate)..." class="proof-input w-full p-3.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm leading-relaxed font-normal transition bg-slate-50/50 hover:bg-white focus:bg-white"></textarea>
+    </div>
+
+    <!-- Footer esplicativo -->
+    <footer class="no-print text-center text-xs text-slate-400 py-6">
+      <p>I dati digitati vengono salvati automaticamente nella memoria locale del tuo browser.</p>
+      <p class="mt-1">Puoi chiudere la pagina e riaprirla in qualsiasi momento senza perdere il tuo lavoro.</p>
+    </footer>
+
+  </main>
+
+  <!-- Modal di conferma Reset personalizzata (senza alert/confirm) -->
+  <div id="resetModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl border border-slate-200">
+      <h4 class="text-base font-bold text-slate-900">Sei sicuro di voler resettare la scheda?</h4>
+      <p class="text-sm text-slate-600 mt-2">Tutti i testi inseriti e lo stato dei suggerimenti verranno cancellati in modo permanente.</p>
+      <div class="mt-5 flex justify-end space-x-2">
+        <button onclick="chiudiResetModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition">Annulla</button>
+        <button onclick="eseguiReset()" class="px-4 py-2 rounded-xl text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white shadow-sm transition">Sì, cancella tutto</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Inizializzazione KaTeX per il rendering automatico delle formule
+    document.addEventListener("DOMContentLoaded", function() {
+      if (window.renderMathInElement) {
+        renderMathInElement(document.body, {
+          delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "$", right: "$", display: false}
+          ],
+          throwOnError: false
+        });
+      }
+      caricaDati();
+      impostaAutoEspansione();
+      aggiornaConteggioSuggerimenti();
+    });
+
+    // Gestione Auto-salvataggio con LocalStorage
+    const campiDaSalvare = ['inputNome', 'inputCognome', 'inputClasse', 'inputData', 'proof1', 'proof2', 'proof3', 'proof4', 'reflection'];
+
+    function salvaDati() {
+      const dati = {};
+      campiDaSalvare.forEach(id => {
+        const elemento = document.getElementById(id);
+        if (elemento) {
+          dati[id] = elemento.value;
+        }
+      });
+      localStorage.setItem('scheda_potenze_dati', JSON.stringify(dati));
+      
+      const badge = document.getElementById('saveStatus');
+      if (badge) {
+        badge.innerHTML = `<svg class="w-3 h-3 mr-1 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg> Salvato`;
+      }
+    }
+
+    function caricaDati() {
+      const datiSalvati = localStorage.getItem('scheda_potenze_dati');
+      if (datiSalvati) {
+        try {
+          const dati = JSON.parse(datiSalvati);
+          campiDaSalvare.forEach(id => {
+            if (dati[id] !== undefined) {
+              const elemento = document.getElementById(id);
+              if (elemento) {
+                elemento.value = dati[id];
+                // Aggiusta l'altezza della textarea dopo il caricamento
+                if (elemento.tagName.toLowerCase() === 'textarea') {
+                  adattaAltezza(elemento);
+                }
+              }
+            }
+          });
+        } catch (e) {
+          console.error("Errore nel caricamento del salvataggio:", e);
+        }
+      }
+
+      // Se il campo data è vuoto, imposta la data odierna di default
+      const inputData = document.getElementById('inputData');
+      if (inputData && !inputData.value) {
+        const oggi = new Date().toISOString().split('T')[0];
+        inputData.value = oggi;
+      }
+
+      // Aggiungi listener per salvataggio istantaneo ad ogni digitazione
+      campiDaSalvare.forEach(id => {
+        const elemento = document.getElementById(id);
+        if (elemento) {
+          elemento.addEventListener('input', () => {
+            salvaDati();
+          });
+        }
+      });
+    }
+
+    // Auto-espansione dinamica delle aree di testo
+    function adattaAltezza(textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = (textarea.scrollHeight + 4) + 'px';
+    }
+
+    function impostaAutoEspansione() {
+      document.querySelectorAll('textarea').forEach(tx => {
+        tx.addEventListener('input', () => adattaAltezza(tx));
+        // Prima regolazione iniziale
+        adattaAltezza(tx);
+      });
+    }
+
+    // Contatore di suggerimenti usati per autovalutazione
+    function aggiornaConteggioSuggerimenti() {
+      const tuttiDettagli = document.querySelectorAll('details');
+      let aperti = 0;
+      tuttiDettagli.forEach(d => {
+        if (d.open) aperti++;
+      });
+      const badge = document.getElementById('hintsCount');
+      if (badge) {
+        badge.textContent = aperti;
+      }
+    }
+
+    // Esportazione del lavoro svolto in formato Markdown/Testo formattato
+    function scaricaFileTesto() {
+      const nome = document.getElementById('inputNome').value || 'Anonimo';
+      const cognome = document.getElementById('inputCognome').value || '';
+      const classe = document.getElementById('inputClasse').value || 'Non specificata';
+      const data = document.getElementById('inputData').value || '';
+
+      const p1 = document.getElementById('proof1').value || '(Nessun testo inserito)';
+      const p2 = document.getElementById('proof2').value || '(Nessun testo inserito)';
+      const p3 = document.getElementById('proof3').value || '(Nessun testo inserito)';
+      const p4 = document.getElementById('proof4').value || '(Nessun testo inserito)';
+      const rif = document.getElementById('reflection').value || '(Nessun testo inserito)';
+
+      const contenuto = `# Laboratorio di Matematica: Dimostrazioni delle Proprietà delle Potenze
+Studente: ${nome} ${cognome}
+Classe: ${classe}
+Data: ${data}
+
+---
+
+## 1. Potenza di un Prodotto: (a * b)^n = a^n * b^n
+${p1}
+
+---
+
+## 2. Potenza di Potenza: (a^n)^m = a^(n * m)
+${p2}
+
+---
+
+## 3. Potenza di un Quoziente: (a / b)^n = a^n / b^n
+${p3}
+
+---
+
+## 4. Potenza con Esponente Intero Negativo: a^(-n) = 1 / a^n
+${p4}
+
+---
+
+## Riflessione critica: Necessità della condizione a != 0
+${rif}
+`;
+
+      const blob = new Blob([contenuto], { type: 'text/markdown;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `dimostrazioni_potenze_${cognome.toLowerCase() || 'studente'}.md`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // Modal di Reset sicura senza confirm() nativo
+    function chiediReset() {
+      const modal = document.getElementById('resetModal');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function chiudiResetModal() {
+      const modal = document.getElementById('resetModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function eseguiReset() {
+      localStorage.removeItem('scheda_potenze_dati');
+      campiDaSalvare.forEach(id => {
+        const elem = document.getElementById(id);
+        if (elem) elem.value = '';
+      });
+      document.querySelectorAll('details').forEach(d => d.open = false);
+      aggiornaConteggioSuggerimenti();
+      chiudiResetModal();
+      document.querySelectorAll('textarea').forEach(tx => adattaAltezza(tx));
+    }
+  </script>
+</body>
+</html>
