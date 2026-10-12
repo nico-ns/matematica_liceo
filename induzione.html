@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Laboratorio Algebrico: Suggerimenti e Guida alle Dimostrazioni</title>
+  <title>Laboratorio Algebrico: Dimostrazione per Induzione</title>
   
   <!-- Tailwind CSS per layout responsive e design accademico moderno -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -24,6 +24,18 @@
       font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     }
 
+    /* Animazione apertura suggerimenti <details> */
+    details summary {
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.2s ease;
+    }
+    details[open] summary {
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+
+    /* Ottimizzazione CSS per la stampa e generazione PDF */
     @media print {
       body {
         background-color: #ffffff !important;
@@ -33,11 +45,26 @@
       .no-print {
         display: none !important;
       }
-      .card-guide {
+      .card-proof {
         break-inside: avoid;
         border: 1px solid #cbd5e1 !important;
         box-shadow: none !important;
         margin-bottom: 1.5rem !important;
+      }
+      textarea {
+        border: 1px solid #94a3b8 !important;
+        background: transparent !important;
+        resize: none !important;
+        overflow: visible !important;
+        height: auto !important;
+        min-height: 140px !important;
+      }
+      details {
+        display: none !important;
+      }
+      details[open] {
+        display: block !important;
+        border: 1px solid #e2e8f0 !important;
       }
     }
   </style>
@@ -47,144 +74,184 @@
   <!-- Barra comandi fissa in alto -->
   <header class="no-print sticky top-4 z-40 max-w-5xl mx-auto mb-6 bg-white/95 backdrop-blur-md shadow-sm border border-slate-200 rounded-2xl px-4 py-3 sm:px-6 flex flex-wrap items-center justify-between gap-3">
     <div class="flex items-center space-x-3">
-      <div class="h-9 w-9 rounded-xl bg-amber-600 text-white flex items-center justify-center font-bold text-lg shadow-sm">
-        💡
+      <div class="h-9 w-9 rounded-xl bg-blue-700 text-white flex items-center justify-center font-bold text-lg shadow-sm">
+        N
       </div>
       <div>
-        <h1 class="text-sm sm:text-base font-bold text-slate-900 tracking-tight leading-tight">Guida ai Suggerimenti</h1>
-        <p class="text-xs text-slate-500 font-medium">Soluzioni commentate e scaffolding</p>
+        <h1 class="text-sm sm:text-base font-bold text-slate-900 tracking-tight leading-tight">Laboratorio di Matematica</h1>
+        <p class="text-xs text-slate-500 font-medium">Liceo Scientifico — $1^{\text{a}}$ Classe</p>
       </div>
     </div>
     
     <div class="flex items-center flex-wrap gap-2 text-xs sm:text-sm">
-      <!-- Pulsante di navigazione verso la scheda principale -->
-      <a href="index.html" class="inline-flex items-center px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium border border-slate-200 transition">
-        <svg class="w-4 h-4 mr-1.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-        Torna alla Scheda Studente
-      </a>
+      <span id="saveStatus" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+        <svg class="w-3 h-3 mr-1 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+        Salvataggio automatico attivo
+      </span>
 
-      <button onclick="window.print()" class="inline-flex items-center px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-medium shadow-sm transition active:scale-95">
+      <button onclick="window.print()" class="inline-flex items-center px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-sm transition active:scale-95">
         <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-        Stampa / PDF Guida
+        Stampa / PDF
+      </button>
+
+      <button onclick="scaricaFileTesto()" class="inline-flex items-center px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium border border-slate-200 transition active:scale-95">
+        <svg class="w-4 h-4 mr-1.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+        Esporta (.md)
+      </button>
+
+      <button onclick="chiediReset()" class="inline-flex items-center px-2.5 py-2 rounded-xl text-rose-600 hover:bg-rose-50 font-medium transition" title="Cancella tutto">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
       </button>
     </div>
   </header>
 
   <main class="max-w-5xl mx-auto space-y-6">
     
-    <!-- Intestazione Pagina -->
+    <!-- Intestazione Studente con Auto-salvataggio -->
     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-      <span class="text-xs font-semibold uppercase tracking-wider text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md">Risorsa Didattica per Docenti e Studenti</span>
-      <h2 class="text-2xl font-bold text-slate-900 mt-2">Analisi Dettagliata e Svolgimento delle Dimostrazioni</h2>
-      <p class="text-sm text-slate-600 mt-1">Questa pagina raccoglie i passaggi logici completi, i collegamenti agli assiomi algebrici fondamentali e le risposte alle domande di riflessione critica.</p>
+      <div class="border-b border-slate-200 pb-4 mb-5 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+        <div>
+          <span class="text-xs font-semibold uppercase tracking-wider text-blue-600 bg-blue-50 px-2.5 py-1 rounded-md">Attività di Approfondimento</span>
+          <h2 class="text-2xl font-bold text-slate-900 mt-2">Nuova Dimostrazione per Induzione: Somma dei Numeri Pari</h2>
+          <p class="text-sm text-slate-600 mt-1">Metti alla prova il principio di induzione matematica affrontando una nuova formula notevole passo dopo passo.</p>
+        </div>
+        <div id="statsBadge" class="no-print self-start md:self-auto bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-xs text-slate-600 font-medium">
+          Suggerimenti sbloccati: <span id="hintsCount" class="font-bold text-blue-600">0</span> su 3
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" for="inputNome">Nome</label>
+          <input type="text" id="inputNome" placeholder="es. Mario" class="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" for="inputCognome">Cognome</label>
+          <input type="text" id="inputCognome" placeholder="es. Rossi" class="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" for="inputClasse">Classe e Sezione</label>
+          <input type="text" id="inputClasse" placeholder="es. 1°A Scientifico" class="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" for="inputData">Data di svolgimento</label>
+          <input type="date" id="inputData" class="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition">
+        </div>
+      </div>
     </div>
 
-    <!-- GUIDA 1: Potenza di un prodotto -->
-    <section class="card-guide bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
-        <div>
-          <span class="inline-block text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2.5 py-0.5 rounded-full mb-1">Dimostrazione 1</span>
-          <h3 class="text-lg font-bold text-slate-900">Potenza di un Prodotto</h3>
-        </div>
-        <div class="text-lg font-semibold text-indigo-900">
-          $$(a \cdot b)^n = a^n \cdot b^n$$
-        </div>
+    <!-- Quadro Teorico e Assegnazione -->
+    <div class="bg-gradient-to-br from-slate-900 to-blue-950 text-white rounded-2xl shadow-sm p-6">
+      <div class="flex items-center space-x-2 text-blue-300 mb-3">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+        <h3 class="text-sm font-bold uppercase tracking-wider">Il Teorema da Dimostrare</h3>
       </div>
-      <div class="space-y-3 text-sm text-slate-700 leading-relaxed">
-        <p><strong>1. Posizione iniziale:</strong> Sfruttando la definizione di potenza con esponente naturale $n \ge 1$, l'intera espressione $(ab)^n$ si sviluppa come il prodotto della base per se stessa $n$ volte:</p>
-        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-center font-mono text-xs sm:text-sm">
-          $$(ab)^n = \underbrace{(ab) \cdot (ab) \cdot \dots \cdot (ab)}_{n \text{ volte}}$$
-        </div>
-        <p><strong>2. Applicazione delle proprietà commutativa e associativa:</strong> Poiché la moltiplicazione nei numeri reali gode delle proprietà commutativa e associativa, possiamo rimuovere le parentesi interne e riordinare i fattori raggruppando tutte le lettere $a$ a sinistra e tutte le lettere $b$ a destra:</p>
-        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-center font-mono text-xs sm:text-sm">
-          $$(ab)^n = (a \cdot a \cdot \dots \cdot a) \cdot (b \cdot b \cdot \dots \cdot b)$$
-        </div>
-        <p><strong>3. Conclusione:</strong> Il primo blocco contiene esattamente $n$ fattori $a$ (quindi per definizione è $a^n$), mentre il secondo blocco contiene $n$ fattori $b$ (ossia $b^n$). Si ottiene così la tesi: $a^n \cdot b^n$.</p>
-      </div>
-    </section>
-
-    <!-- GUIDA 2: Potenza di potenza -->
-    <section class="card-guide bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
-        <div>
-          <span class="inline-block text-xs font-bold text-violet-700 bg-violet-50 border border-violet-200 px-2.5 py-0.5 rounded-full mb-1">Dimostrazione 2</span>
-          <h3 class="text-lg font-bold text-slate-900">Potenza di Potenza</h3>
-        </div>
-        <div class="text-lg font-semibold text-violet-900">
-          $$(a^n)^m = a^{n \cdot m}$$
-        </div>
-      </div>
-      <div class="space-y-3 text-sm text-slate-700 leading-relaxed">
-        <p><strong>1. Posizione iniziale:</strong> Consideriamo la potenza esterna di esponente $m$. Per definizione, la base $(a^n)$ deve essere moltiplicata per se stessa $m$ volte:</p>
-        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-center font-mono text-xs sm:text-sm">
-          $$(a^n)^m = \underbrace{a^n \cdot a^n \cdot \dots \cdot a^n}_{m \text{ fattori}}$$
-        </div>
-        <p><strong>2. Regola del prodotto di potenze con stessa base:</strong> Applicando la proprietà elementare $a^x \cdot a^y = a^{x+y}$, il prodotto ripetuto di potenze con base $a$ si traduce nella somma dei singoli esponenti:</p>
-        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-center font-mono text-xs sm:text-sm">
-          $$(a^n)^m = a^{\underbrace{n + n + \dots + n}_{m \text{ addendi}}}$$
-        </div>
-        <p><strong>3. Conclusione:</strong> Per definizione di moltiplicazione nei numeri naturali, la somma di $m$ addendi tutti uguali a $n$ equivale al prodotto $n \cdot m$. Dunque si giunge a $(a^n)^m = a^{n \cdot m}$.</p>
-      </div>
-    </section>
-
-    <!-- GUIDA 3: Potenza di un quoziente -->
-    <section class="card-guide bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
-        <div>
-          <span class="inline-block text-xs font-bold text-teal-700 bg-teal-50 border border-teal-200 px-2.5 py-0.5 rounded-full mb-1">Dimostrazione 3</span>
-          <h3 class="text-lg font-bold text-slate-900">Potenza di un Quoziente (Frazione)</h3>
-        </div>
-        <div class="text-lg font-semibold text-teal-900">
-          $$\left(\frac{a}{b}\right)^n = \frac{a^n}{b^n}$$
-        </div>
-      </div>
-      <div class="space-y-3 text-sm text-slate-700 leading-relaxed">
-        <p><strong>1. Posizione iniziale:</strong> La base è la frazione $\frac{a}{b}$ (con $b \neq 0$). Applicando la definizione di potenza, moltiplichiamo la frazione per se stessa $n$ volte:</p>
-        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-center font-mono text-xs sm:text-sm">
-          $$\left(\frac{a}{b}\right)^n = \frac{a}{b} \cdot \frac{a}{b} \cdot \dots \cdot \frac{a}{b} \quad (n \text{ volte})$$
-        </div>
-        <p><strong>2. Regola di moltiplicazione frazionaria:</strong> Il prodotto di più frazioni si calcola moltiplicando tra loro tutti i numeratori e tutti i denominatori:</p>
-        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-center font-mono text-xs sm:text-sm">
-          $$\left(\frac{a}{b}\right)^n = \frac{a \cdot a \cdot \dots \cdot a}{b \cdot b \cdot \dots \cdot b}$$
-        </div>
-        <p><strong>3. Conclusione:</strong> Riconoscendo al numeratore il prodotto di $n$ fattori $a$ ($a^n$) e al denominatore il prodotto di $n$ fattori $b$ ($b^n$), otteniamo direttamente $\frac{a^n}{b^n}$.</p>
-      </div>
-    </section>
-
-    <!-- GUIDA 4: Esponente negativo -->
-    <section class="card-guide bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
-        <div>
-          <span class="inline-block text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 px-2.5 py-0.5 rounded-full mb-1">Dimostrazione 4</span>
-          <h3 class="text-lg font-bold text-slate-900">Potenza con Esponente Intero Negativo</h3>
-        </div>
-        <div class="text-lg font-semibold text-rose-900">
-          $$a^{-n} = \frac{1}{a^n}$$
-        </div>
-      </div>
-      <div class="space-y-3 text-sm text-slate-700 leading-relaxed">
-        <p><strong>1. Principio di permanenza:</strong> Per estendere le potenze dai naturali agli interi negativi senza contraddire le regole già stabilite, scriviamo l'esponente $-n$ come differenza $0 - n$:</p>
-        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-center font-mono text-xs sm:text-sm">
-          $$a^{-n} = a^{0 - n} = \frac{a^0}{a^n}$$
-        </div>
-        <p><strong>2. Sostituzione dell'esponente nullo:</strong> Poiché per definizione $a^0 = 1$ (purché $a \neq 0$), l'espressione si semplifica immediatamente in $\frac{1}{a^n}$.</p>
-        <p><strong>3. Interpretazione come inverso moltiplicativo:</strong> Moltiplicando $a^{-n}$ per $a^n$ si ottiene $a^{-n+n} = a^0 = 1$, confermando che $a^{-n}$ è esattamente il reciproco (inverso) di $a^n$.</p>
-      </div>
-    </section>
-
-    <!-- Approfondimento Critico -->
-    <section class="card-guide bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-      <h3 class="text-base font-bold text-slate-900 mb-2">Approfondimento: Perché $a \neq 0$ in $a^0$ e $a^{-n}$?</h3>
-      <p class="text-sm text-slate-700 leading-relaxed">
-        Se ponessimo $a = 0$ nella scrittura $a^0$, ci troveremmo di fronte alla forma indeterminata $0^0$. Analogamente, nella definizione con esponente negativo $a^{-n} = \frac{1}{a^n}$, se $a = 0$ l'espressione si ridurrebbe a $\frac{1}{0^n} = \frac{1}{0}$, che rappresenta una **divisione per zero** (operazione priva di significato nell'insieme dei numeri reali). Per questo motivo la restrizione $a \neq 0$ è essenziale per la coerenza del sistema algebrico.
+      
+      <p class="text-slate-300 text-sm leading-relaxed mb-4">
+        Vogliamo dimostrare che la somma dei primi $n$ numeri pari consecutivi (partendo da $2$) è sempre data dal prodotto tra il numero dei termini $n$ e il suo successivo $(n+1)$:
       </p>
+      <div class="bg-white/10 rounded-xl p-4 text-center my-3 border border-white/10 overflow-x-auto text-lg sm:text-xl font-bold">
+        $$2 + 4 + 6 + \dots + 2n = n(n+1)$$
+        <span class="text-xs font-normal text-slate-300 block mt-1">Innotazione di sommatoria: $\sum_{i=1}^{n} 2i = n(n+1)$</span>
+      </div>
+    </div>
+
+    <!-- SEZIONE DI LAVORO -->
+    <section class="card-proof bg-white rounded-2xl shadow-sm border border-slate-200 p-6 transition-all hover:border-slate-300">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-2 mb-4">
+        <div>
+          <span class="inline-block text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-full mb-1">Conduzione della Dimostrazione</span>
+          <h3 class="text-lg font-bold text-slate-900">Sviluppo dei Passi Induttivi</h3>
+        </div>
+      </div>
+
+      <!-- Spazio di lavoro studente -->
+      <div class="mb-4">
+        <label for="proofInduction" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+          <span>La tua dimostrazione completa (Base e Passo Induttivo):</span>
+          <span class="text-slate-400 font-normal normal-case text-xs">Scrivi chiaramente i passaggi</span>
+        </label>
+        <textarea id="proofInduction" rows="8" placeholder="1. Base dell'induzione (n = 1)...&#10;2. Ipotesi Induttiva (n = k)...&#10;3. Passo Induttivo (n = k + 1)..." class="proof-input w-full p-3.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm leading-relaxed font-normal transition bg-slate-50/50 hover:bg-white focus:bg-white"></textarea>
+      </div>
+
+      <!-- Scaffolding a 3 livelli -->
+      <div class="space-y-2 no-print">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Hai bisogno di un aiuto o di una verifica? Sblocca i suggerimenti:</p>
+
+        <!-- Livello 1 -->
+        <details class="group border border-amber-200/80 rounded-xl bg-amber-50/40 overflow-hidden" ontoggle="aggiornaConteggioSuggerimenti()">
+          <summary class="px-4 py-2.5 text-xs sm:text-sm font-semibold text-amber-900 flex items-center justify-between hover:bg-amber-100/50">
+            <span class="flex items-center">
+              <span class="w-5 h-5 rounded-md bg-amber-200 text-amber-900 flex items-center justify-center text-xs font-bold mr-2">1</span>
+              Livello 1: La Base dell'Induzione ($n = 1$)
+            </span>
+            <span class="text-amber-600 group-open:rotate-180 transition-transform">▼</span>
+          </summary>
+          <div class="p-3.5 bg-white text-xs sm:text-sm text-slate-700 border-t border-amber-100">
+            Verifica la formula per $n = 1$. A sinistra il primo termine è $2$. A destra sostituisci $n = 1$ nella formula $n(n+1)$, ottenendo $1 \cdot (1+1) = 2$. Poiché $2 = 2$, la base è verificata!
+          </div>
+        </details>
+
+        <!-- Livello 2 -->
+        <details class="group border border-blue-200/80 rounded-xl bg-blue-50/40 overflow-hidden" ontoggle="aggiornaConteggioSuggerimenti()">
+          <summary class="px-4 py-2.5 text-xs sm:text-sm font-semibold text-blue-900 flex items-center justify-between hover:bg-blue-100/50">
+            <span class="flex items-center">
+              <span class="w-5 h-5 rounded-md bg-blue-200 text-blue-900 flex items-center justify-center text-xs font-bold mr-2">2</span>
+              Livello 2: Ipotesi Induttiva e Tesi ($n = k + 1$)
+            </span>
+            <span class="text-amber-600 group-open:rotate-180 transition-transform">▼</span>
+          </summary>
+          <div class="p-3.5 bg-white text-xs sm:text-sm text-slate-700 border-t border-blue-100">
+            Assumi vera la formula per $n = k$: <br>
+            $2 + 4 + 6 + \dots + 2k = k(k+1)$<br><br>
+            La tesi per $n = k+1$ richiede di dimostrare che:<br>
+            $2 + 4 + 6 + \dots + 2k + 2(k+1) = (k+1)[(k+1)+1] = (k+1)(k+2)$
+          </div>
+        </details>
+
+        <!-- Livello 3 -->
+        <details class="group border border-emerald-200/80 rounded-xl bg-emerald-50/40 overflow-hidden" ontoggle="aggiornaConteggioSuggerimenti()">
+          <summary class="px-4 py-2.5 text-xs sm:text-sm font-semibold text-emerald-900 flex items-center justify-between hover:bg-emerald-100/50">
+            <span class="flex items-center">
+              <span class="w-5 h-5 rounded-md bg-emerald-200 text-emerald-900 flex items-center justify-center text-xs font-bold mr-2">3</span>
+              Livello 3: Svolgimento algebrico e raccoglimento
+            </span>
+            <span class="text-amber-600 group-open:rotate-180 transition-transform">▼</span>
+          </summary>
+          <div class="p-3.5 bg-white text-xs sm:text-sm text-slate-700 border-t border-emerald-100">
+            Sostituisci la parte iniziale della somma con l'ipotesi induttiva $k(k+1)$:<br>
+            $k(k+1) + 2(k+1)$<br><br>
+            Ora raccogli a fattor comune $(k+1)$ esattamente come hai fatto per la formula di Gauss: otterrai $(k+1)(k+2)$, che dimostra la tesi!
+          </div>
+        </details>
+      </div>
     </section>
+
+    <!-- Riflessione critica finale -->
+    <div class="card-proof bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+      <h3 class="text-base font-bold text-slate-900 mb-2">Domanda di Riflessione</h3>
+      <p class="text-sm text-slate-600 mb-3">Perché il principio di induzione viene spesso paragonato a una fila di tesseri di un domino che cadono?</p>
+      <textarea id="reflectionInduction" rows="3" placeholder="Argomenta brevemente il legame tra la base dell'induzione e il passo induttivo..." class="proof-input w-full p-3.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm leading-relaxed font-normal transition bg-slate-50/50 hover:bg-white focus:bg-white"></textarea>
+    </div>
+
+    <!-- Footer esplicativo -->
+    <footer class="no-print text-center text-xs text-slate-400 py-6">
+      <p>I dati digitati vengono salvati automaticamente nella memoria locale del tuo browser.</p>
+    </footer>
 
   </main>
 
-  <footer class="no-print text-center text-xs text-slate-400 py-6">
-    <p>Pagina di supporto didattico per il Laboratorio di Matematica — Liceo Scientifico.</p>
-  </footer>
+  <!-- Modal di Reset personalizzata -->
+  <div id="resetModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl border border-slate-200">
+      <h4 class="text-base font-bold text-slate-900">Sei sicuro di voler resettare la scheda?</h4>
+      <p class="text-sm text-slate-600 mt-2">Tutti i testi inseriti e lo stato dei suggerimenti verranno cancellati in modo permanente.</p>
+      <div class="mt-5 flex justify-end space-x-2">
+        <button onclick="chiudiResetModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition">Annulla</button>
+        <button onclick="eseguiReset()" class="px-4 py-2 rounded-xl text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white shadow-sm transition">Sì, cancella tutto</button>
+      </div>
+    </div>
+  </div>
 
   <script>
     // Inizializzazione KaTeX per il rendering automatico delle formule
@@ -198,7 +265,147 @@
           throwOnError: false
         });
       }
+      caricaDati();
+      impostaAutoEspansione();
+      aggiornaConteggioSuggerimenti();
     });
+
+    const campiDaSalvare = ['inputNome', 'inputCognome', 'inputClasse', 'inputData', 'proofInduction', 'reflectionInduction'];
+
+    function salvaDati() {
+      const dati = {};
+      campiDaSalvare.forEach(id => {
+        const elemento = document.getElementById(id);
+        if (elemento) {
+          dati[id] = elemento.value;
+        }
+      });
+      localStorage.setItem('scheda_induzione_pari_dati', JSON.stringify(dati));
+      
+      const badge = document.getElementById('saveStatus');
+      if (badge) {
+        badge.innerHTML = `<svg class="w-3 h-3 mr-1 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg> Salvato`;
+      }
+    }
+
+    function caricaDati() {
+      const datiSalvati = localStorage.getItem('scheda_induzione_pari_dati');
+      if (datiSalvati) {
+        try {
+          const dati = JSON.parse(datiSalvati);
+          campiDaSalvare.forEach(id => {
+            if (dati[id] !== undefined) {
+              const elemento = document.getElementById(id);
+              if (elemento) {
+                elemento.value = dati[id];
+                if (elemento.tagName.toLowerCase() === 'textarea') {
+                  adattaAltezza(elemento);
+                }
+              }
+            }
+          });
+        } catch (e) {
+          console.error("Errore nel caricamento del salvataggio:", e);
+        }
+      }
+
+      const inputData = document.getElementById('inputData');
+      if (inputData && !inputData.value) {
+        const oggi = new Date().toISOString().split('T')[0];
+        inputData.value = oggi;
+      }
+
+      campiDaSalvare.forEach(id => {
+        const elemento = document.getElementById(id);
+        if (elemento) {
+          elemento.addEventListener('input', () => {
+            salvaDati();
+          });
+        }
+      });
+    }
+
+    function adattaAltezza(textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = (textarea.scrollHeight + 4) + 'px';
+    }
+
+    function impostaAutoEspansione() {
+      document.querySelectorAll('textarea').forEach(tx => {
+        tx.addEventListener('input', () => adattaAltezza(tx));
+        adattaAltezza(tx);
+      });
+    }
+
+    function aggiornaConteggioSuggerimenti() {
+      const tuttiDettagli = document.querySelectorAll('details');
+      let aperti = 0;
+      tuttiDettagli.forEach(d => {
+        if (d.open) aperti++;
+      });
+      const badge = document.getElementById('hintsCount');
+      if (badge) {
+        badge.textContent = aperti;
+      }
+    }
+
+    function scaricaFileTesto() {
+      const nome = document.getElementById('inputNome').value || 'Anonimo';
+      const cognome = document.getElementById('inputCognome').value || '';
+      const classe = document.getElementById('inputClasse').value || 'Non specificata';
+      const data = document.getElementById('inputData').value || '';
+
+      const proof = document.getElementById('proofInduction').value || '(Nessun testo inserito)';
+      const rif = document.getElementById('reflectionInduction').value || '(Nessun testo inserito)';
+
+      const contenuto = `# Laboratorio di Matematica: Dimostrazione per Induzione (Numeri Pari)
+Studente: ${nome} ${cognome}
+Classe: ${classe}
+Data: ${data}
+
+---
+
+## Svolgimento Dimostrazione
+${proof}
+
+---
+
+## Riflessione critica
+${rif}
+`;
+
+      const blob = new Blob([contenuto], { type: 'text/markdown;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `induzione_numeri_pari_${cognome.toLowerCase() || 'studente'}.md`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function chiediReset() {
+      const modal = document.getElementById('resetModal');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function chiudiResetModal() {
+      const modal = document.getElementById('resetModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function eseguiReset() {
+      localStorage.removeItem('scheda_induzione_pari_dati');
+      campiDaSalvare.forEach(id => {
+        const elem = document.getElementById(id);
+        if (elem) elem.value = '';
+      });
+      document.querySelectorAll('details').forEach(d => d.open = false);
+      aggiornaConteggioSuggerimenti();
+      chiudiResetModal();
+      document.querySelectorAll('textarea').forEach(tx => adattaAltezza(tx));
+    }
   </script>
 </body>
 </html>
